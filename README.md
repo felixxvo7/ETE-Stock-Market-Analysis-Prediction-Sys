@@ -125,9 +125,3 @@ Access the app at <http://127.0.0.1:8050/>.
 ## Author
 
 Felix Vo
-
-------------------------------------------------------------------------
-
-## **License**
-
-This project is licensed under the MIT License. See `LICENSE` for more details.
