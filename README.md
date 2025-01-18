@@ -2,7 +2,9 @@
 
 ## **Project Overview**
 
-The End-to-End Stock Market Analysis and Prediction project seeks to provide a complete solution for evaluating and forecasting stock market data. This project combines a variety of data science techniques, including web scraping, exploratory data analysis (EDA), and predictive modeling with machine learning algorithms. The system gathers stock market data from several web sources, cleans and processes it, and then stores it in a PostgreSQL database for efficient querying. The project also uses interactive data visualizations like Plotly Dash and Power BI to provide consumers with dynamic and relevant information. The project forecasts stock price fluctuations using machine learning techniques like KNN classification, which provides useful information for financial market decision-making.
+The End-to-End Stock Market Analysis and Prediction project seeks to provide a complete solution for evaluating and forecasting stock market data. 
+This project combines a variety of data science techniques, including web scraping, exploratory data analysis (EDA), and predictive modeling with machine learning algorithms. The system gathers stock market data from several web sources, cleans and processes it, and then stores it in a PostgreSQL database for efficient querying. The project also uses interactive data visualizations like Plotly Dash and Power BI to provide consumers with dynamic and relevant information.
+The project forecasts stock price fluctuations using machine learning techniques like KNN classification, which provides useful information for financial market decision-making.
 
 ------------------------------------------------------------------------
 
