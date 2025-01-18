@@ -2,7 +2,7 @@ import os
 import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
-from config import CLEANED_DATA_PATH
+from config import RAW_DATA_PATH
 
 def fetch_stock_data(stocks):
     # Get today's date and calculate the date one year ago
@@ -39,55 +39,18 @@ def fetch_stock_data(stocks):
     if all_data:
         combined_data = pd.concat(all_data)
 
-        # Call the data wrangling function
-        cleaned_data = wrangle_data(combined_data)
-
         # Ensure the output directory exists
-        os.makedirs(CLEANED_DATA_PATH, exist_ok=True)
+        os.makedirs(RAW_DATA_PATH, exist_ok=True)
 
         # Define the output file path
-        output_file_path = os.path.join(CLEANED_DATA_PATH, "cleaned_collected_data.csv")
+        output_file_path = os.path.join(RAW_DATA_PATH, "raw_collected_1year_data.csv")
 
-        # Save the cleaned data to a CSV file
-        cleaned_data.to_csv(output_file_path)
+        # Save the data to a CSV file
+        combined_data.to_csv(output_file_path)
         
         print(f"Data collection and saving to CSV completed at {output_file_path}")
     else:
         print("No data was collected for any stock.")
-
-def wrangle_data(data):
-    # Data Wrangling Steps:
-
-    # 1. Convert 'Date' index to a column (if necessary)
-    data['Date'] = data.index
-
-    # 2. Handle missing values
-    data = data.fillna(method='ffill')  # Forward fill missing values
-
-    # 3. Convert data types (e.g., Ensure 'Date' column is datetime)
-    data['Date'] = pd.to_datetime(data['Date'])
-    
-    # 4. Calculate daily percentage change in Close price (percentage change)
-    data['Close_pct_change'] = data['Close'].pct_change() * 100
-    
-    # 5. Calculate 7-day moving average for 'Adj Close'
-    data['7_Day_MA'] = data['Adj Close'].rolling(window=7).mean()
-    
-    # 6. Calculate the percentage change in volume
-    data['Volume_pct_change'] = data['Volume'].pct_change() * 100
-
-    # 7. Drop any duplicate rows (if any)
-    data = data.drop_duplicates()
-
-    # 8. Filter data if needed (e.g., Only keep data from the past 6 months)
-    # Filter data from the last 6 months
-    six_months_ago = datetime.today() - timedelta(days=180)
-    data = data[data['Date'] >= six_months_ago]
-
-    # 9. Reset index for cleaner output (optional)
-    data.reset_index(drop=True, inplace=True)
-
-    return data
 
 # List of stock symbols to fetch
 stocks = ['SNAP', 'ABNB', 'SHOP', 'TIXT', 'CNQ', 'NFLX', 'PG', 'WMT', 'MNSO', 'D']
