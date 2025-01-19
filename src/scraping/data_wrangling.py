@@ -61,10 +61,6 @@ def impute_missing_data(data, imputation_config=None, n_neighbors=5):
 
 def wrangle_data(data):
     # Data Wrangling Steps:
-
-    # Convert 'Date' index to a column (if necessary)
-    data['Date'] = data.index
-
     required_columns = ['Close', 'Adj Close', 'Volume']
     missing_columns = [col for col in required_columns if col not in data.columns]
     if missing_columns:
@@ -99,10 +95,14 @@ def wrangle_data(data):
     # Calculate the percentage change in volume
     data['Volume_pct_change'] = data['Volume'].pct_change() * 100
 
+    # 9. Calculate 7-day moving average for 'Adj Close'
+    data['7_Day_MA'] = data['Adj Close'].rolling(window=7).mean()
+
     # Since the first row doesn't have infomation to fill, We use impute_missing_data
     new_imputation_config = {
         'Close_pct_change': 'mean',       # Use KNN for the 'Close' column
-        'Volume_pct_change': 'mean'  # Use mean for the 'Adj Close' column
+        'Volume_pct_change': 'mean',  # Use mean for the 'Adj Close' column
+        '7_Day_MA': 'mean'
         }
     data = impute_missing_data(data, new_imputation_config)
 
