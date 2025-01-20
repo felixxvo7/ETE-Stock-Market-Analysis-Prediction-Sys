@@ -8,9 +8,9 @@ This project combines various data science techniques, including web scraping, d
 
 The system gathers stock market data from several web sources and yfinance packages, cleans and processes it, and then stores it in a SQLite3 database for efficient querying. The project also uses interactive data visualizations like Plotly Dash and Power BI to provide consumers with dynamic and relevant information.
 
-The project forecasts stock price fluctuations using machine learning techniques like KNN classification, which provides useful information for financial market decision-making. It will have an interactive visualization through Plotly Dash and PowerBI to observe and forecasting stock market data.
+The project forecasts stock price fluctuations using machine learning techniques like KNN classification, which provides useful information for financial market decision-making. It will have an interactive visualization through Plotly Dash and PowerBI to observe and forecast stock market data.
 
-**This project is to be continued, the above features are the expected features that the project will have ideally in the future. However,  web scraping, data collection, data wrangling, data cleaning, and Database managing are ready to go. However, EDA and ML_model are implemented but might need further improvement(those are just scraps). The PowerBI exploration is based on the collected data, not from the EDA, and might require further updates. Stay tuned!!!**
+**This project is to be continued, the above features are the expected features that the project will have ideally in the future. However,  web scraping, data collection, data wrangling, data cleaning, and Database managing are ready to go. However, EDA and ML_model are implemented but might need further improvement(those are just drafts). The PowerBI exploration is based on the collected data, not from the EDA, and might require further updates. Stay tuned!!!**
 
 ------------------------------------------------------------------------
 
