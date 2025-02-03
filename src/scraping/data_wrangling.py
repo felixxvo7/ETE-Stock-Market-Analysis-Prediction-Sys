@@ -72,10 +72,10 @@ def wrangle_data(data):
         }
         data = impute_missing_data(data, imputation_config)
 
-
     # Convert data types (e.g., Ensure 'Date' column is datetime)
     data['Date'] = pd.to_datetime(data['Date'])
-    
+    data = data.sort_values(['Symbol', 'Date'])
+
     # Convert numeric columns to float if needed
     numeric_cols = data.select_dtypes(include=[np.number]).columns
     data[numeric_cols] = data[numeric_cols].astype(float)
@@ -85,24 +85,26 @@ def wrangle_data(data):
         data = data[data['Close'] >= 0]
     
     # Ensure stock symbols are uppercase
-    if 'symbol' in data.columns:
-        data['symbol'] = data['symbol'].str.upper()
+    if 'Symbol' in data.columns:
+        data['Symbol'] = data['Symbol'].str.upper()
+
+    # Group by 'Ticker' to ensure calculations are done per stock
+    grouped = data.groupby('Symbol')
 
     # Calculate daily percentage change in Close price (percentage change)
     if 'Close' in data.columns:
-        data['Close_pct_change'] = data['Close'].pct_change() * 100
-    
+        data['Close_pct_change'] = grouped['Close'].pct_change()
     # Calculate the percentage change in volume
-    data['Volume_pct_change'] = data['Volume'].pct_change() * 100
+    data['Volume_pct_change'] = grouped['Volume'].pct_change()
 
-    # 9. Calculate 7-day moving average for 'Adj Close'
-    data['7_Day_MA'] = data['Adj Close'].rolling(window=7).mean()
+    # Calculate 7-day moving average for 'Adj Close'
+    data['7_Day_MA'] = grouped['Adj Close'].rolling(window=7).mean().reset_index(level=0, drop=True)
 
-    # Since the first row doesn't have infomation to fill, We use impute_missing_data
+    # Since the first row doesn't have information to fill, We use impute_missing_data
     new_imputation_config = {
-        'Close_pct_change': 'mean',       # Use KNN for the 'Close' column
-        'Volume_pct_change': 'mean',  # Use mean for the 'Adj Close' column
-        '7_Day_MA': 'mean'
+        'Close_pct_change': 'mean',       # Use mean for the 'Close_pct_change' column
+        'Volume_pct_change': 'mean',      # Use mean for the 'Volume_pct_change' column
+        '7_Day_MA': 'mean'                # Use mean for the '7_Day_MA' column
         }
     data = impute_missing_data(data, new_imputation_config)
 
@@ -113,7 +115,6 @@ def wrangle_data(data):
     data.reset_index(drop=True, inplace=True)
 
     return data
-
 
 def fetch_clean_data_from_raw(raw_file_name):
     # Construct the full file path
@@ -138,7 +139,7 @@ def fetch_clean_data_from_raw(raw_file_name):
     output_file_path = os.path.join(CLEANED_DATA_PATH, "cleaned_collected_data.csv")
 
     # Save the cleaned data to a CSV file
-    cleaned_data.to_csv(output_file_path)
+    cleaned_data.to_csv(output_file_path, index=False)
 
     print(f"Data cleaning and wrangling is saved as CSV completed at {output_file_path}")
 
