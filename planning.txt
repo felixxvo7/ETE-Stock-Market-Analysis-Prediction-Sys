@@ -1,0 +1,21 @@
+End-to-End Stock Market Analysis and Prediction 
+ 
+1. Technical Analysis --> Study price patterns and trends to predict future movements.
+	a. Price Charts:Use candlestick charts to identify patterns (e.g., head & shoulders, double tops/bottoms).
+	b. Indicators: Trend: Moving Averages (SMA, EMA), MACD.
+			Momentum: RSI (Relative Strength Index), Stochastic Oscillator.
+			Volatility: Bollinger Bands, Average True Range (ATR).
+
+	c.Volume Analysis: Rising volume confirms trends; declining volume signals weak trends.
+
+2. Quantitative Analysis --> Use math, statistics, and machine learning to model stock behavior.
+	a. Time-Series Forecasting:LSTM.
+	b. Factor Models: CAPM (Capital Asset Pricing Model): Assess risk-adjusted returns.
+	c. Portfolio Optimization: Use Modern Portfolio Theory (MPT) to balance risk and return
+
+3. Risk Management
+Position Sizing: Risk only 1-2% of your portfolio per trade.
+
+Stop-Loss: Set stop-loss orders based on volatility (e.g., 2x ATR).
+
+Diversification: Avoid overexposure to a single sector or asset.
