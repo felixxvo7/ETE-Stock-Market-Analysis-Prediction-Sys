@@ -97,14 +97,11 @@ def wrangle_data(data):
     # Calculate the percentage change in volume
     data['Volume_pct_change'] = grouped['Volume'].pct_change()
 
-    # Calculate 7-day moving average for 'Adj Close'
-    data['7_Day_MA'] = grouped['Adj Close'].rolling(window=7).mean().reset_index(level=0, drop=True)
 
     # Since the first row doesn't have information to fill, We use impute_missing_data
     new_imputation_config = {
         'Close_pct_change': 'mean',       # Use mean for the 'Close_pct_change' column
         'Volume_pct_change': 'mean',      # Use mean for the 'Volume_pct_change' column
-        '7_Day_MA': 'mean'                # Use mean for the '7_Day_MA' column
         }
     data = impute_missing_data(data, new_imputation_config)
 

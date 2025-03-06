@@ -9,7 +9,7 @@ End-to-End Stock Market Analysis and Prediction
 	c.Volume Analysis: Rising volume confirms trends; declining volume signals weak trends.
 
 2. Quantitative Analysis --> Use math, statistics, and machine learning to model stock behavior.
-	a. Time-Series Forecasting:LSTM.
+	a. Time-Series Forecasting: LSTM.
 	b. Factor Models: CAPM (Capital Asset Pricing Model): Assess risk-adjusted returns.
 	c. Portfolio Optimization: Use Modern Portfolio Theory (MPT) to balance risk and return
 
@@ -19,3 +19,4 @@ Position Sizing: Risk only 1-2% of your portfolio per trade.
 Stop-Loss: Set stop-loss orders based on volatility (e.g., 2x ATR).
 
 Diversification: Avoid overexposure to a single sector or asset.
+

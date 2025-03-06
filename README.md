@@ -1,28 +1,64 @@
 # **End-to-End Stock Market Analysis and Prediction**
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python)](https://www.python.org/)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+**A data-driven pipeline for stock market forecasting, combining web scraping, machine learning, and interactive dashboards.**
 ## **Project Overview**
 
-The End-to-End Stock Market Analysis and Prediction project provides a complete solution for visualizing and forecasting stock market data. 
+This project provides an end-to-end solution for analyzing and predicting stock market trends. It integrates technical analysis, quantitative modeling, and risk management to deliver actionable insights for traders and investors.
 
-This project combines various data science techniques, including web scraping, data collection, data wrangling, data cleaning, exploratory data analysis (EDA), and predictive modelling with machine learning algorithms. 
+Technical Analysis: Study price patterns and trends using candlestick charts and technical indicators.
 
-The system gathers stock market data from several web sources and yfinance packages, cleans and processes it, and then stores it in a SQLite3 database for efficient querying. The project also uses interactive data visualizations like Plotly Dash and Power BI to provide consumers with dynamic and relevant information.
+Quantitative Analysis: Forecast stock prices using machine learning (e.g., LSTM) and optimize portfolios using Modern Portfolio Theory (MPT).
 
-The project forecasts stock price fluctuations using machine learning techniques like KNN classification, which provides useful information for financial market decision-making. It will have an interactive visualization through Plotly Dash and PowerBI to observe and forecast stock market data.
-
-**This project is to be continued, the above features are the expected features that the project will have ideally in the future. However,  web scraping, data collection, data wrangling, data cleaning, and Database managing are ready to go. However, EDA and ML_model are implemented but might need further improvement(those are just drafts). The PowerBI exploration is based on the collected data, not from the EDA, and might require further updates. Stay tuned!!!**
+Risk Management: Implement position sizing, stop-loss strategies, and diversification to minimize risk.
 
 ------------------------------------------------------------------------
 
 ## **Features**
 
--   **Data Collection:** Scrape stock market data from online sources using BeautifulSoup.Or collected through yfinance.
--   **Data Wrangling:** Clean and process raw data for analysis and modelling.(Cleaning data by handling missing data, adding more columns that will support EDA after)
--   **Database Integration:** Store processed two tables of data in an SQLite database.
--   **Exploratory Data Analysis:** Perform visual and SQL-based analyses of stock trends.
--   **Interactive Dashboards:** Create dynamic visualizations using Plotly Dash.
--   **Predictive Modeling:** Use machine learning (e.g., KNN classification, Linear regression, Logistic Regression or Clustering/Classification,...) for stock price predictions.
--   **Power BI or Dash Integration:** Additional interactive visual analytics.
+### Data Pipeline
+- **Automated Data Collection**:  
+  - Web scraping with `BeautifulSoup` for fundamental data  
+  - Historical OHLC data via `yfinance` API  
+- **Data Processing**:  
+  - Cleaning, normalization, and feature engineering  
+  - SQLite database integration with `SQLAlchemy`  
+
+### Technical Analysis
+- **Price Charts**:  
+  - Use candlestick charts to identify patterns (e.g., head & shoulders, double tops/bottoms).  
+- **Indicators**:  
+  - **Trend**: Moving Averages (SMA, EMA), MACD.  
+  - **Momentum**: RSI (Relative Strength Index), Stochastic Oscillator.  
+  - **Volatility**: Bollinger Bands, Average True Range (ATR).  
+- **Volume Analysis**:  
+  - Rising volume confirms trends; declining volume signals weak trends.  
+
+### Quantitative Analysis
+- **Time-Series Forecasting**:  
+  - LSTM neural networks for stock price prediction.  
+- **Factor Models**:  
+  - CAPM (Capital Asset Pricing Model) to assess risk-adjusted returns.  
+- **Portfolio Optimization**:  
+  - Use Modern Portfolio Theory (MPT) to balance risk and return.  
+
+### Risk Management
+- **Position Sizing**:  
+  - Risk only 1-2% of your portfolio per trade.  
+- **Stop-Loss**:  
+  - Set stop-loss orders based on volatility (e.g., 2x ATR).  
+- **Diversification**:  
+  - Avoid overexposure to a single sector or asset.  
+
+### Visualization
+- **Interactive Dashboards**:  
+  - Real-time charts with Plotly Dash  
+  - Financial reporting in Power BI  
+- **Dynamic Reports**:  
+  - SQL-driven exploratory analysis  
+
 
 ------------------------------------------------------------------------
 
@@ -45,8 +81,9 @@ stock_analysis_project/
 │   ├── analysis/
 │   │   ├── __init__.py      
 │   │   ├── eda.py            
-│   │   ├── ml_models.py       
-│   │   └── visualization.py   
+│   │   ├── quantitative_analysis.py
+│   │   ├── technique_analysis.py       
+│   │   └── risk_management.py   
 │   └── config.py           
 ├── notebook/
 │   ├── data_collect.ipynb
@@ -66,24 +103,16 @@ stock_analysis_project/
 
 ------------------------------------------------------------------------
 
-## **Key Technologies**
+## Key Technologies
 
--   **Python Libraries:**
-    -   `BeautifulSoup`: Web scraping
-    -   `pandas`: Data manipulation
-    -   `sqlalchemy`: Database interaction
-    -   `plotly`: Interactive visualizations
-    -   `scikit-learn`: Machine learning
--   **Database:** sqlite
--   **Visualization Tools:** Plotly Dash, Power BI
+| **Category**         | **Tools & Libraries**                                              |
+|----------------------|---------------------------------------------------------------------|
+| **Data Collection**  | ![BeautifulSoup](https://img.shields.io/badge/-BeautifulSoup-ff69b4), ![yfinance](https://img.shields.io/badge/-yfinance-blue), ![requests](https://img.shields.io/badge/-requests-green) |
+| **Data Processing**  | ![pandas](https://img.shields.io/badge/-pandas-150458), ![numpy](https://img.shields.io/badge/-numpy-013243), ![SQLAlchemy](https://img.shields.io/badge/-SQLAlchemy-red) |
+| **Machine Learning** | ![scikit-learn](https://img.shields.io/badge/-scikit--learn-orange), ![statsmodels](https://img.shields.io/badge/-statsmodels-blue) |
+| **Visualization**    | ![Plotly](https://img.shields.io/badge/-Plotly-3F4F75), ![Matplotlib](https://img.shields.io/badge/-Matplotlib-blue), ![Power BI](https://img.shields.io/badge/-Power_BI-F2C811) |
+| **Database**         | ![SQLite](https://img.shields.io/badge/-SQLite-003B57)             |
 
 ------------------------------------------------------------------------
 ## Author
-Felix Vo
--   Expand visualization capabilities in Power BI and Dash.
-
-------------------------------------------------------------------------
-
-## Author
-
 Felix Vo
