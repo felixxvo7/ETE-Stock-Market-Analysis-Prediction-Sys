@@ -61,14 +61,13 @@ def impute_missing_data(data, imputation_config=None, n_neighbors=5):
 
 def wrangle_data(data):
     # Data Wrangling Steps:
-    required_columns = ['Close', 'Adj Close', 'Volume']
+    required_columns = ['Close', 'Volume']  # Removed 'Adj Close'
     missing_columns = [col for col in required_columns if col not in data.columns]
     if missing_columns:
         print(f"Warning: Missing columns {missing_columns}. Wrangling may fail.")
         imputation_config = {
-        'Close': 'knn',       # Use KNN for the 'Close' column
-        'Adj Close': 'mean',  # Use mean for the 'Adj Close' column
-        'Volume': 'median'    # Use median for the 'Volume' column
+            'Close': 'knn',       # Use KNN for the 'Close' column
+            'Volume': 'median'    # Use median for the 'Volume' column
         }
         data = impute_missing_data(data, imputation_config)
 
@@ -96,14 +95,6 @@ def wrangle_data(data):
         data['Close_pct_change'] = grouped['Close'].pct_change()
     # Calculate the percentage change in volume
     data['Volume_pct_change'] = grouped['Volume'].pct_change()
-
-
-    # Since the first row doesn't have information to fill, We use impute_missing_data
-    new_imputation_config = {
-        'Close_pct_change': 'mean',       # Use mean for the 'Close_pct_change' column
-        'Volume_pct_change': 'mean',      # Use mean for the 'Volume_pct_change' column
-        }
-    data = impute_missing_data(data, new_imputation_config)
 
     # Drop any duplicate rows (if any)
     data = data.drop_duplicates()
@@ -142,8 +133,18 @@ def fetch_clean_data_from_raw(raw_file_name):
 
 
 # List of stock symbols to fetch
-stocks = ['SNAP', 'ABNB', 'SHOP', 'TIXT', 'CNQ', 'NFLX', 'PG', 'WMT', 'MNSO', 'D']
+stocks = ['AAPL', 'MSFT', 'AMZN', 'GOOGL', 'TSLA', 'NVDA', 'META', 'UNH', 'MA', 'LLY',
+    'COST', 'V', 'JNJ', 'PG', 'WMT', 'DIS', 'HD', 'BAC', 'XOM', 'CVX',
+    'PFE', 'ABBV', 'KO', 'PEP', 'CSCO', 'INTC', 'MRK', 'T', 'VZ', 'ADBE',
+    'CRM', 'NFLX', 'PYPL', 'ORCL', 'IBM', 'QCOM', 'AMD', 'TXN', 'NKE', 'MCD',
+    'SBUX', 'GS', 'MS', 'C', 'BA', 'CAT', 'GE', 'HON', 'LMT', 'MMM',
+    'UPS', 'FDX', 'AMT', 'PLD', 'SPG', 'NOW', 'ZM', 'DOCU', 'SNOW', 'SQ',
+    'ROKU', 'SPOT', 'UBER', 'LYFT', 'ABNB', 'SHOP', 'TWLO', 'DDOG', 'OKTA', 'CRWD',
+    'ZS', 'NET', 'MDB', 'FSLY', 'PLTR', 'ASML', 'BABA', 'LULU', 'TGT', 'LOW',
+    'TJX', 'DG', 'DLTR', 'ROST', 'SNAP', 'TIXT', 'CNQ', 'MNSO', 'D']
+
 
 # Call the function to fetch data for the given stocks
-raw_file_name = "raw_collected_1year_data.csv"
+raw_file_name = "updated_collected_data.csv"
 fetch_clean_data_from_raw(raw_file_name)
+
