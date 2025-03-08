@@ -25,3 +25,6 @@ RAW_DATA_PATH = 'data/raw_data'
 
 CLEANED_DATA_PATH = 'data/cleaned_data'
 
+PREPROCESSED_DATA_PATH = 'data/processed_data/merged'
+
+DATABASE_PATH = 'data/database'
