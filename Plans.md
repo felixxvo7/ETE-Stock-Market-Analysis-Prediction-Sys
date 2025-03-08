@@ -1,5 +1,6 @@
 # **End-to-End Stock Market Analysis and Prediction**
-
+--> make sure to make it as pipeline
+--> make sure to able to work with 100 stocks
 ## Technical Analysis
 
 --\> Study price patterns and trends to predict future movements.

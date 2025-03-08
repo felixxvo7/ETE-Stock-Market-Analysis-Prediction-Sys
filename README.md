@@ -80,9 +80,8 @@ stock_analysis_project/
 │   │   └── wrangling_data.py      
 │   ├── analysis/
 │   │   ├── __init__.py      
-│   │   ├── eda.py            
+│   │   ├── technique_analysis.py   
 │   │   ├── quantitative_analysis.py
-│   │   ├── technique_analysis.py       
 │   │   └── risk_management.py   
 │   └── config.py           
 ├── notebook/
