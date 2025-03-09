@@ -25,7 +25,7 @@ Project pipelines: data collect -> data cleaning -> data wrangling -> preprocess
   - Historical OHLC data via `yfinance` API  
 - **Data Processing**:  
   - Cleaning, normalization, and feature engineering  
-  - SQLite database integration with `SQLAlchemy`  
+  - SQLite database integration with `SQLite3`  
 
 ### Technical Analysis
 - **Price Charts**:  
@@ -33,9 +33,12 @@ Project pipelines: data collect -> data cleaning -> data wrangling -> preprocess
 - **Indicators**:  
   - **Trend**: Moving Averages (SMA, EMA), MACD.  
   - **Momentum**: RSI (Relative Strength Index), Stochastic Oscillator.  
-  - **Volatility**: Bollinger Bands, Average True Range (ATR).  
-- **Volume Analysis**:  
-  - Rising volume confirms trends; declining volume signals weak trends.  
+  - **Volatility**: Bollinger Bands, Average True Range (ATR).
+**Pattern Detection**:  
+  The code includes functions to detect specific candlestick patterns:
+  - **Doji**: Identified by the `detect_doji` function, indicating indecision in the market.
+  - **Engulfing Patterns**: Detected using the `detect_engulfing` function, which identifies bullish and bearish engulfing patterns.
+  - **Hammer**: Recognized by the `detect_hammer` function, indicating potential bullish reversals.
 
 ### Quantitative Analysis
 - **Time-Series Forecasting**:  
@@ -68,21 +71,22 @@ Project pipelines: data collect -> data cleaning -> data wrangling -> preprocess
 ```         
 stock_analysis_project/
 │
-├── src/
+├── source_code/
 │   ├── __init__.py
-│   ├── database/
-│   │   ├── __init__.py
-│   │   ├── database.py
-│   │ 
-│   ├── scraping/
+│   ├── preprocessing/
 │   │   ├── __init__.py 
 │   │   ├── web_scraper.py    
 │   │   └── collect_data.py
-│   │   └── wrangling_data.py      
+│   │   └── data_cleaning.py
+│   │   └── wrangling_data.py
+│   │   └── database.py     
 │   ├── analysis/
-│   │   ├── __init__.py      
+│   │   ├── __init__.py
+│   │   └── preprocessing_EDA.py  
 │   │   ├── technique_analysis.py   
-│   │   ├── quantitative_analysis.py
+│   │   ├── stationary_test.py
+│   │   └── LSTM.py
+│   │   └── CAMP & MPT.py
 │   │   └── risk_management.py   
 │   └── config.py           
 ├── notebook/
@@ -91,10 +95,13 @@ stock_analysis_project/
 │   ├── ml_models.ipynb
 │   ├── dashboard_prototype.ipynb            
 ├── data/
-│   ├── raw_data/             
+│   ├── raw_data/
+│   ├── database/ 
 │   └── processed_data/
-├── PowerBI/
-|
+├── visualization/
+│   ├── ACF-PACF/             
+│   └── candlestick_stock_chart/          
+│   └── plots/
 ├── .env                  
 ├── .gitignore          
 ├── requirements.txt      
