@@ -12,7 +12,8 @@ Technical Analysis: Study price patterns and trends using candlestick charts and
 
 Quantitative Analysis: Forecast stock prices using machine learning (e.g., LSTM) and optimize portfolios using Modern Portfolio Theory (MPT).
 
-Risk Management: Implement position sizing, stop-loss strategies, and diversification to minimize risk.
+
+Project pipelines: data collect -> data cleaning -> data wrangling -> preprocess EDA -> database -> technical analysis -> stationary test -> lstm -> camp/mpt -> model validation
 
 ------------------------------------------------------------------------
 
