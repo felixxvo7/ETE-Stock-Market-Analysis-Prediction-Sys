@@ -131,7 +131,8 @@ This dataset contains **daily stock market data** for **82 unique companies** (e
 ```python
          Date        Open        High    ...    BBB_20_2.0  BBP_20_2.0   ATRr_14  
 0  2024-03-11  172.127235  173.560470    ...     12.694592    0.212824  3.406377  
-1  2024-03-12  172.336252  173.212122    ...     12.396309    0.257889  3.375260  
+1  2024-03-12  172.336252  173.212122    ...     12.396309    0.257889  3.375260
+```
 ## Key Technologies
 
 | **Category**         | **Tools & Libraries**                                              |
