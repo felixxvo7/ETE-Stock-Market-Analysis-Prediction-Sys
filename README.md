@@ -146,7 +146,9 @@ stock_analysis_project/
 
 ## Dashboard and report snapshot
 
-![![](images/clipboard-3515375824.png)](result/PowerBI%20shot%20(2).png)
+![](result/Screenshot Dash.png)
+
+![](result/PowerBI%20shot%20(2).png)
 
 ![](images/clipboard-2972370001.png)
 
