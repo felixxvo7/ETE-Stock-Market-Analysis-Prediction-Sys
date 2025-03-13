@@ -1,31 +1,28 @@
+import os
 import sqlite3
 import pandas as pd
-import os
 import numpy as np
-import yfinance as yf
+import statsmodels.api as sm
 import matplotlib.pyplot as plt
-from pypfopt import EfficientFrontier, risk_models, expected_returns
-from pypfopt.plotting import plot_efficient_frontier
+from pypfopt.efficient_frontier import EfficientFrontier
+from pypfopt import risk_models, expected_returns
+from pypfopt.plotting import plot_efficient_frontier, plot_weights
 from config import DATABASE_PATH
 
 def retrieve_data(table="full_stock_data"):
-    """Retrieve data from SQLite database"""
+    """Retrieve stock data from SQLite database"""
     db_file_path = os.path.join(DATABASE_PATH, "stocks_database.db")
     try:
         conn = sqlite3.connect(db_file_path)
         print(f"Connected to database at: {db_file_path}")
     except sqlite3.OperationalError as e:
         print(f"Error: {e}")
-        print("Check if the database file exists and the path is correct.")
         return None
 
     query = f"SELECT * FROM {table}"
     try:
         data_df = pd.read_sql(query, conn)
-        print("Data retrieved successfully:")
-        print(data_df.head())  # Display the first few rows
-        print(f"Columns: {data_df.columns.tolist()}")  # Print column names
-        print(f"Unique Symbols: {data_df['Symbol'].unique()}")  # Print unique symbols
+        print("Data retrieved successfully.")
     except Exception as e:
         print(f"Error executing query: {e}")
         return None
@@ -35,116 +32,145 @@ def retrieve_data(table="full_stock_data"):
 
     return data_df
 
-def fetch_market_data(market_ticker="^GSPC", start_date=None, end_date=None):
-    """
-    Fetch market index data using yfinance
-    
-    Parameters:
-        market_ticker (str): Ticker symbol for the market index (default: S&P 500)
-        start_date (str): Start date in 'YYYY-MM-DD' format
-        end_date (str): End date in 'YYYY-MM-DD' format
-    
-    Returns:
-        pd.Series: Market index returns
-    """
-    # Fetch market data
-    market_data = yf.download(market_ticker, start=start_date, end=end_date)['Adj Close']
-    market_returns = market_data.pct_change().dropna()
-    return market_returns
+# Load stock data from the database
+df = retrieve_data()
 
-def calculate_capm_returns(data_df, risk_free_rate=0.02, market_ticker="^GSPC"):
-    """
-    Calculate CAPM expected returns using yfinance for market data
-    """
-    # Fetch market data
-    start_date = data_df['Date'].min()
-    end_date = data_df['Date'].max()
-    market_returns = fetch_market_data(market_ticker, start_date=start_date, end_date=end_date)
-    
-    # Prepare stock returns
-    close_prices = data_df.pivot(index='Date', columns='Symbol', values='Close')
-    stock_returns = close_prices.pct_change().dropna()
-    
-    # Align market and stock returns
-    common_dates = stock_returns.index.intersection(market_returns.index)
-    if len(common_dates) == 0:
-        raise ValueError("No common dates between market and stock returns.")
-    
-    stock_returns = stock_returns.loc[common_dates]
-    market_returns = market_returns.loc[common_dates]
-    
-    # Calculate CAPM parameters
-    covariance = stock_returns.apply(lambda x: np.cov(x, market_returns)[0, 1])
-    beta = covariance / market_returns.var()
-    market_premium = market_returns.mean() - risk_free_rate/252  # Daily premium
-    
-    # CAPM formula (annualized)
-    expected_returns = risk_free_rate + beta * market_premium * 252
-    return expected_returns
+if df is not None:
+    # Convert date column to datetime and sort data
+    df['Date'] = pd.to_datetime(df['Date'])
+    df = df.sort_values(by='Date')
 
-def optimize_portfolio(data_df, target_return=0.15):
-    """
-    Optimize portfolio using Modern Portfolio Theory
-    """
-    # Prepare data
-    close_prices = data_df.pivot(index='Date', columns='Symbol', values='Close')
-    
-    # Calculate expected returns and covariance matrix
-    mu = expected_returns.mean_historical_return(close_prices)
-    S = risk_models.sample_cov(close_prices)
-    
-    # Optimize portfolio
-    ef = EfficientFrontier(mu, S)
-    ef.add_constraint(lambda w: w >= 0)  # No shorting
-    ef.add_constraint(lambda w: w.sum() == 1)  # Fully invested
-    ef.efficient_return(target_return=target_return)
-    
-    return ef.clean_weights()
+    # **Ensure Close_pct_change is computed correctly**
+    if 'Close_pct_change' not in df.columns:
+        df['Close_pct_change'] = df.groupby('Symbol')['Close'].pct_change()
 
-def portfolio_analysis():
-    """Main portfolio optimization workflow with yfinance for CAPM"""
-    # Retrieve data from database
-    data_df = retrieve_data()
-    if data_df is None:
-        return
+    # Assume risk-free rate of 2% annually, converted to daily
+    risk_free_rate = 0.02 / 252
+
+    # Calculate market return as the average return of all stocks
+    market_return = df.groupby('Date')['Close_pct_change'].mean()
+
+    # Prepare data for CAPM calculations
+    capm_data = df.pivot(index='Date', columns='Symbol', values='Close_pct_change')
+
+    # **Fix Issue**: Remove NaN and infinite values
+    capm_data.replace([np.inf, -np.inf], np.nan, inplace=True)
+    capm_data.dropna(axis=1, thresh=int(0.90 * len(capm_data)), inplace=True)  # Keep stocks with >90% valid data
+    capm_data.fillna(0, inplace=True)  # Fill remaining NaNs with 0
+
+    if capm_data.empty:
+        raise ValueError("No valid data available after cleaning! Check your stock data.")
+
+    # Calculate beta for each stock
+    betas = {}
+    for symbol in capm_data.columns:
+        X = market_return.loc[capm_data.index]  # Market returns
+        y = capm_data[symbol]  # Stock returns
+
+        X = sm.add_constant(X)  # Add intercept
+        model = sm.OLS(y, X).fit()
+        betas[symbol] = model.params[1]  # Beta coefficient
+
+    # Calculate expected returns using CAPM formula
+    expected_returns_capm = {
+        symbol: risk_free_rate + betas[symbol] * (market_return.mean() - risk_free_rate)
+        for symbol in betas
+    }
+
+    # Convert results to a DataFrame
+    capm_results_df = pd.DataFrame.from_dict(expected_returns_capm, orient='index', columns=['Expected Return'])
+    capm_results_df['Beta'] = capm_results_df.index.map(betas)
+
+    # Save CAPM results to CSV
+    capm_results_file = "capm_results.csv"
+    capm_results_df.to_csv(capm_results_file)
+    print(f"\nCAPM results saved to {capm_results_file}")
+
+    # --- Modern Portfolio Theory (MPT) using PyPortfolioOpt ---
     
-    # Convert date column
-    data_df['Date'] = pd.to_datetime(data_df['Date'])
-    
+    # Compute Expected Returns & Covariance Matrix
+    mu = expected_returns.mean_historical_return(capm_data)
+    S = risk_models.sample_cov(capm_data)
+
+    # **Fix 1: Remove Stocks with NaN Expected Returns**
+    mu.dropna(inplace=True)
+    capm_data = capm_data[mu.index]  # Keep only valid stocks
+    S = S.loc[mu.index, mu.index]  # Align covariance matrix
+
+    # **Fix 2: Normalize Covariance Matrix to Reduce Volatility Issues**
+    S = S / np.max(np.abs(S))  # Normalize covariance matrix to avoid extreme values
+
+    # **Fix 3: Winsorize Expected Returns to Remove Outliers**
+    mu = mu.clip(lower=mu.quantile(0.05), upper=mu.quantile(0.95))
+
+    # **Fix 4: Ensure Covariance Matrix is Positive Definite**
     try:
-        # CAPM Analysis with yfinance
-        print("\nCalculating CAPM Expected Returns...")
-        capm_returns = calculate_capm_returns(data_df)
-        print("CAPM Expected Returns:")
-        print(capm_returns)
-        
-        # Portfolio Optimization
-        print("\nOptimizing Portfolio...")
-        optimized_weights = optimize_portfolio(data_df)
-        print("Optimized Portfolio Weights:")
-        for symbol, weight in optimized_weights.items():
-            if weight > 0.01:
-                print(f"{symbol}: {weight*100:.2f}%")
-        
-        # Efficient Frontier Visualization
-        print("\nPlotting Efficient Frontier...")
-        close_prices = data_df.pivot(index='Date', columns='Symbol', values='Close')
-        mu = expected_returns.mean_historical_return(close_prices)
-        S = risk_models.sample_cov(close_prices)
-        
-        plt.figure(figsize=(10, 6))
-        plot_efficient_frontier(EfficientFrontier(mu, S), show_assets=True)
-        plt.title("Efficient Frontier with Technical Indicators")
-        plt.xlabel("Annualized Risk (Volatility)")
-        plt.ylabel("Annualized Return")
-        plt.show()
-        
-        # Additional metrics using technical indicators
-        print("\nTechnical Indicator Statistics:")
-        print(data_df.groupby('Symbol')[['RSI_14', 'ATRr_14', 'BBP_20_2.0']].mean())
-        
-    except Exception as e:
-        print(f"Error in portfolio analysis: {e}")
+        min_eigenvalue = np.min(np.linalg.eigvals(S))
+        if min_eigenvalue < 0:
+            S += np.eye(len(S)) * (-min_eigenvalue + 1e-6)
+    except np.linalg.LinAlgError:
+        print("Covariance Matrix has issues. Replacing with identity matrix.")
+        S = np.eye(len(S)) * 1e-6
 
-if __name__ == "__main__":
-    portfolio_analysis()
+    # **Portfolio Optimization**
+    ef = EfficientFrontier(mu, S)
+
+    try:
+        weights = ef.max_sharpe(risk_free_rate=risk_free_rate, solver="SCS")
+    except:
+        print("Optimization failed. Switching to Minimum Volatility Portfolio.")
+        try:
+            weights = ef.min_volatility()
+        except:
+            raise ValueError("Optimization completely failed. Please check your dataset.")
+
+    cleaned_weights = ef.clean_weights()
+    expected_return, expected_volatility, expected_sharpe = ef.portfolio_performance()
+
+    if np.isnan(expected_return) or np.isnan(expected_sharpe):
+        raise ValueError("Optimization failed: Expected return or Sharpe Ratio is NaN. Check stock data.")
+
+    # Save Optimized Portfolio Weights to CSV
+    weights_df = pd.DataFrame.from_dict(cleaned_weights, orient='index', columns=['Weight'])
+    weights_file = "optimized_portfolio_weights.csv"
+    weights_df.to_csv(weights_file)
+    print(f"\nOptimized portfolio weights saved to {weights_file}")
+
+    # Save Portfolio Performance Metrics to CSV
+    performance_data = {
+        "Expected Return": [expected_return],
+        "Expected Volatility": [expected_volatility],
+        "Sharpe Ratio": [expected_sharpe]
+    }
+    performance_df = pd.DataFrame(performance_data)
+    performance_file = "portfolio_performance.csv"
+    performance_df.to_csv(performance_file, index=False)
+    print(f"\nPortfolio performance metrics saved to {performance_file}")
+
+    # **Print Outputs**
+    print("\nFinal Optimized Portfolio Weights:")
+    print(weights_df)
+
+    print("\nFinal Portfolio Performance Metrics:")
+    print(performance_df)
+
+    # **Plot Efficient Frontier with Asset Names**
+    ef_plot = EfficientFrontier(mu, S)  # New instance for plotting
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    plot_efficient_frontier(ef_plot, ax=ax, show_assets=True)
+    plt.title("Efficient Frontier with Asset Names")
+
+    # **Add Labels for Each Asset**
+    for i, symbol in enumerate(mu.index):
+        risk = np.sqrt(S.iloc[i, i])  # Standard deviation (risk)
+        ret = mu.iloc[i]  # Expected return
+        ax.scatter(risk, ret, marker='o', s=50, label=symbol, alpha=0.7)  # Plot each stock
+        ax.text(risk, ret, symbol, fontsize=9, ha='right', alpha=0.8)  # Annotate
+
+    plt.xlabel("Risk (Standard Deviation)")
+    plt.ylabel("Expected Return")
+    plt.legend(fontsize=8, loc="best", frameon=True)  # Add legend
+    plt.show()
+
+    plot_weights(cleaned_weights)
