@@ -146,7 +146,7 @@ stock_analysis_project/
 
 ## Dashboard and report snapshot
 
-![](result/Screenshot 2025-03-14 135716.png)
+![](result/Screenshot%202025-03-14%20135716.png)
 
 ![](images/clipboard-3515375824.png)
 
@@ -155,7 +155,7 @@ stock_analysis_project/
 ![](images/clipboard-2972370001.png)
 
 |  |
-|:-----------------------------------------------------------------------|
+|:---|
 | \## Stock Market Dataset (2024-2025) |
 | \### Overview This dataset contains **daily stock market data** for **82 unique companies** (e.g., AAPL, AMZN, TSLA, NVDA) from **March 11, 2024, to March 8, 2025**. It includes price metrics, trading volume, and technical indicators, making it ideal for financial analysis, algorithmic trading, or predictive modeling. |
 | \### Key Features - **Date**: Daily trading dates. - **Price Data**: `Open`, `High`, `Low`, `Close`. - **Volume**: Daily trading volume. - **Symbol & Company**: Ticker symbols and company names. - **Technical Indicators**: - Moving Averages (`SMA_7`, `EMA_30`). - MACD (`MACD_12_26_9`, Histogram, Signal Line). - RSI (`RSI_14`). - Bollinger Bands (`BBL_20_2.0`, `BBM_20_2.0`, `BBU_20_2.0`, `BBB_20_2.0`, `BBP_20_2.0`). - Volatility (`ATRr_14`). - **Percentage Changes**: `Close_pct_change`, `Volume_pct_change`. |
