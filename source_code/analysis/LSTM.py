@@ -90,6 +90,8 @@ def train_lstm(X_train, y_train, X_test, y_test, scaler, date_index, features):
     )[:, 0]  
     mse = mean_squared_error(actual_prices, predictions)
     mae = mean_absolute_error(actual_prices, predictions)
+    rmse = np.sqrt(mse)
+    print(f"Root Mean Square Error: {rmse:.4f}")
     print(f"Mean Squared Error: {mse:.4f}")
     print(f"Mean Absolute Error: {mae:.4f}")
 
