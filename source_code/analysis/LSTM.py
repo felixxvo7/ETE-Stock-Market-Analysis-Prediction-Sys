@@ -44,8 +44,8 @@ def preprocess_data(df, stock_symbol="AAPL", seq_length=90):
     def create_sequences(data, seq_length):
         X, y = [], []
         for i in range(len(data) - seq_length):
-            X.append(data[i : i + seq_length])  # 90-day input window
-            y.append(data[i + seq_length, 0])  # Predict 'Close' price (first column)
+            X.append(data[i : i + seq_length])
+            y.append(data[i + seq_length, 0]) 
         return np.array(X), np.array(y)
 
     X, y = create_sequences(data_scaled, seq_length)
@@ -70,7 +70,7 @@ def build_lstm_model(input_shape):
         LSTM(100, return_sequences=False),
         Dropout(0.2),
         Dense(50, activation='relu'),
-        Dense(1)  # Output layer (predicting Close price)
+        Dense(1)
     ])
     model.compile(optimizer='adam', loss='mean_squared_error')
     return model
@@ -80,18 +80,14 @@ def train_lstm(X_train, y_train, X_test, y_test, scaler, date_index, features):
     """Trains the LSTM model and evaluates it"""
     model = build_lstm_model((X_train.shape[1], len(features)))
     history = model.fit(X_train, y_train, epochs=20, batch_size=16, validation_data=(X_test, y_test), verbose=1)
-
-    # Predictions
     predictions = model.predict(X_test)
     predictions = scaler.inverse_transform(
         np.concatenate([predictions, np.zeros((predictions.shape[0], len(features) - 1))], axis=1)
-    )[:, 0]  # Inverse scale only 'Close' prices
+    )[:, 0] 
 
-    # Metrics
     actual_prices = scaler.inverse_transform(
         np.concatenate([y_test.reshape(-1, 1), np.zeros((y_test.shape[0], len(features) - 1))], axis=1)
-    )[:, 0]  # Inverse scale only 'Close' prices
-
+    )[:, 0]  
     mse = mean_squared_error(actual_prices, predictions)
     mae = mean_absolute_error(actual_prices, predictions)
     print(f"Mean Squared Error: {mse:.4f}")

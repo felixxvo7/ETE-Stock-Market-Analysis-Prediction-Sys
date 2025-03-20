@@ -32,44 +32,38 @@ def retrieve_data(table="full_stock_data"):
 
     return data_df
 
-# Load stock data from the database
+
 df = retrieve_data()
 
 if df is not None:
-    # Convert date column to datetime and sort data
     df['Date'] = pd.to_datetime(df['Date'])
     df = df.sort_values(by='Date')
 
-    # **Ensure Close_pct_change is computed correctly**
     if 'Close_pct_change' not in df.columns:
         df['Close_pct_change'] = df.groupby('Symbol')['Close'].pct_change()
 
-    # Assume risk-free rate of 2% annually, converted to daily
     risk_free_rate = 0.02 / 252
 
-    # Calculate market return as the average return of all stocks
     market_return = df.groupby('Date')['Close_pct_change'].mean()
 
     # Prepare data for CAPM calculations
     capm_data = df.pivot(index='Date', columns='Symbol', values='Close_pct_change')
 
-    # **Fix Issue**: Remove NaN and infinite values
     capm_data.replace([np.inf, -np.inf], np.nan, inplace=True)
-    capm_data.dropna(axis=1, thresh=int(0.90 * len(capm_data)), inplace=True)  # Keep stocks with >90% valid data
-    capm_data.fillna(0, inplace=True)  # Fill remaining NaNs with 0
-
+    capm_data.dropna(axis=1, thresh=int(0.90 * len(capm_data)), inplace=True) 
+    capm_data.fillna(0, inplace=True) 
     if capm_data.empty:
         raise ValueError("No valid data available after cleaning! Check your stock data.")
 
     # Calculate beta for each stock
     betas = {}
     for symbol in capm_data.columns:
-        X = market_return.loc[capm_data.index]  # Market returns
-        y = capm_data[symbol]  # Stock returns
+        X = market_return.loc[capm_data.index]  
+        y = capm_data[symbol]  
 
-        X = sm.add_constant(X)  # Add intercept
+        X = sm.add_constant(X)
         model = sm.OLS(y, X).fit()
-        betas[symbol] = model.params[1]  # Beta coefficient
+        betas[symbol] = model.params[1]
 
     # Calculate expected returns using CAPM formula
     expected_returns_capm = {
@@ -91,19 +85,14 @@ if df is not None:
     # Compute Expected Returns & Covariance Matrix
     mu = expected_returns.mean_historical_return(capm_data)
     S = risk_models.sample_cov(capm_data)
-
-    # **Fix 1: Remove Stocks with NaN Expected Returns**
     mu.dropna(inplace=True)
-    capm_data = capm_data[mu.index]  # Keep only valid stocks
-    S = S.loc[mu.index, mu.index]  # Align covariance matrix
+    capm_data = capm_data[mu.index] 
+    S = S.loc[mu.index, mu.index] 
 
-    # **Fix 2: Normalize Covariance Matrix to Reduce Volatility Issues**
-    S = S / np.max(np.abs(S))  # Normalize covariance matrix to avoid extreme values
+    S = S / np.max(np.abs(S))
 
-    # **Fix 3: Winsorize Expected Returns to Remove Outliers**
     mu = mu.clip(lower=mu.quantile(0.05), upper=mu.quantile(0.95))
 
-    # **Fix 4: Ensure Covariance Matrix is Positive Definite**
     try:
         min_eigenvalue = np.min(np.linalg.eigvals(S))
         if min_eigenvalue < 0:
@@ -155,8 +144,7 @@ if df is not None:
     print(performance_df)
 
     # **Plot Efficient Frontier with Asset Names**
-    ef_plot = EfficientFrontier(mu, S)  # New instance for plotting
-
+    ef_plot = EfficientFrontier(mu, S)
     fig, ax = plt.subplots(figsize=(10, 6))
     plot_efficient_frontier(ef_plot, ax=ax, show_assets=True)
     plt.title("Efficient Frontier with Asset Names")
@@ -165,12 +153,12 @@ if df is not None:
     for i, symbol in enumerate(mu.index):
         risk = np.sqrt(S.iloc[i, i])  # Standard deviation (risk)
         ret = mu.iloc[i]  # Expected return
-        ax.scatter(risk, ret, marker='o', s=50, label=symbol, alpha=0.7)  # Plot each stock
-        ax.text(risk, ret, symbol, fontsize=9, ha='right', alpha=0.8)  # Annotate
+        ax.scatter(risk, ret, marker='o', s=50, label=symbol, alpha=0.7)
+        ax.text(risk, ret, symbol, fontsize=9, ha='right', alpha=0.8)
 
     plt.xlabel("Risk (Standard Deviation)")
     plt.ylabel("Expected Return")
-    plt.legend(fontsize=8, loc="best", frameon=True)  # Add legend
+    plt.legend(fontsize=8, loc="best", frameon=True)
     plt.show()
 
     plot_weights(cleaned_weights)
