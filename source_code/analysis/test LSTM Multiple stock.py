@@ -36,8 +36,8 @@ def preprocess_data(df, seq_length=90):
     # Features to use
     features = ['Close', 'Volume', 'RSI_14', 'MACD_12_26_9']
     
-    # Encode stock symbols
-    stock_encoder = OneHotEncoder(sparse_output=False)  # FIXED HERE
+    # Encode stock symbols with handle_unknown="ignore" to prevent unseen issues
+    stock_encoder = OneHotEncoder(sparse_output=False, handle_unknown="ignore")
     stock_symbols = df[['Symbol']]
     stock_encoded = stock_encoder.fit_transform(stock_symbols)
 
@@ -101,6 +101,7 @@ def build_lstm_model(input_shape):
     return model
 
 # Step 4: Train & Evaluate Model
+# Step 4: Train & Evaluate Model
 def train_lstm(X_train, y_train, X_test, y_test, scalers, date_index, feature_cols, stock_encoder):
     """Trains the LSTM model and evaluates it"""
     model = build_lstm_model((X_train.shape[1], len(feature_cols)))
@@ -109,20 +110,36 @@ def train_lstm(X_train, y_train, X_test, y_test, scalers, date_index, feature_co
     # Predictions
     predictions = model.predict(X_test)
 
-    # Inverse transform predictions (per stock)
-    decoded_stocks = stock_encoder.inverse_transform(X_test[:, -1, -stock_encoder.categories_[0].size:])
+    # Extract the last time step's stock encoding
+    encoded_stocks = X_test[:, -1, -stock_encoder.categories_[0].size:]
+
+    # Ensure no NaNs before inverse_transform
+    encoded_stocks = np.where(np.isnan(encoded_stocks), 0, encoded_stocks)  # Replace NaNs with zeros
+
+    # Validate that encoded_stocks contains at least one "1" in each row
+    valid_mask = encoded_stocks.sum(axis=1) > 0  # Check if at least one stock is encoded
+    decoded_stocks = np.array([["Unknown"]] * len(encoded_stocks))  # Default to "Unknown" stocks
+    decoded_stocks[valid_mask] = stock_encoder.inverse_transform(encoded_stocks[valid_mask])
+
+    print(f"Decoded Stock Samples: {decoded_stocks[:5]}")  # Debugging Output
+
     predicted_prices = []
     actual_prices = []
 
     for i, stock in enumerate(decoded_stocks):
         stock_name = stock[0]
+
+        if stock_name == "Unknown" or stock_name not in scalers:
+            print(f"Warning: Stock '{stock_name}' not found in scalers. Skipping...")
+            continue  # Skip unknown or missing stocks
+
         scaler = scalers[stock_name]
 
         # Inverse scale only 'Close' prices
         pred = scaler.inverse_transform(
             np.concatenate([predictions[i].reshape(-1, 1), np.zeros((1, len(feature_cols) - 1))], axis=1)
         )[0, 0]
-        
+
         actual = scaler.inverse_transform(
             np.concatenate([y_test[i].reshape(-1, 1), np.zeros((1, len(feature_cols) - 1))], axis=1)
         )[0, 0]
@@ -130,11 +147,19 @@ def train_lstm(X_train, y_train, X_test, y_test, scalers, date_index, feature_co
         predicted_prices.append(pred)
         actual_prices.append(actual)
 
+    # If no valid stocks found, print error and return
+    if len(actual_prices) == 0 or len(predicted_prices) == 0:
+        print("ERROR: No valid stock predictions found. Please check your dataset consistency.")
+        return None
+
     # Metrics
     mse = mean_squared_error(actual_prices, predicted_prices)
     mae = mean_absolute_error(actual_prices, predicted_prices)
+    rmse = np.sqrt(mse)
+
     print(f"Mean Squared Error: {mse:.4f}")
     print(f"Mean Absolute Error: {mae:.4f}")
+    print(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
 
     # Plot results
     plt.figure(figsize=(12, 6))
@@ -147,6 +172,7 @@ def train_lstm(X_train, y_train, X_test, y_test, scalers, date_index, feature_co
     plt.show()
 
     return model
+
 
 # Main execution
 if __name__ == "__main__":
